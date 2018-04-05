@@ -9,18 +9,17 @@ const db = require('./db/snacks.js')
 app.disable('x-powered-by')
 
 if (process.env.NODE_ENV === 'development') app.use(morgan('dev'))
-
 app.use(bodyParser.json())
 
 const snackRouters = require('./src/routes/snacks.js')
 app.use('/snacks', snackRouters)
 
-
-
-
-
-
-
+app.use((err, req, res, next) => {
+  const status = err.status || 500
+  res.status(status).json({
+    error: err
+  })
+})
 
 app.listen(port, () => {
   console.log(`Listening on port ${port}`)
