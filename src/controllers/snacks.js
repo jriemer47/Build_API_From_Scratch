@@ -3,46 +3,84 @@ const model = require('../models/snacks')
 
 // working and tested
 getAll = (req, res, next) => {
-  if (model.getAll()) res.status(200).send(model.getAll())
-  else res.status(400).send()
+  // console.log('hello')
+  const limit = req.query.limit
+  const snacks = model.getAll(limit)
+
+  if (!snacks) {
+    return next({
+      status: 404,
+      message: "Could not get list of snacks"
+    })
+  }
+  res.status(200).json({
+    snacks
+  })
 }
 
+// working and tested
 getById = (req, res, next) => {
   const id = req.params.id
-  model.getById(id, (result, error) => {
-    if (error) {
-      res.status(404).send("ID not found")
-    }
-    if (res.body.length === 0) {
-      res.status(404).json({
-        status: 404,
-        message: `Snack with ${id} does not exist`
-      })
-    }
-    res.status(200).json(result[0])
+  const snacks = model.getById(id)
+
+  if (!snacks) {
+    return next({
+      status: 404,
+      message: `No snack with id of ${id}`
+    })
+  }
+  res.status(200).json({
+    snacks
+  })
+}
+// working and tested
+create = (req, res, next) => {
+  const result = model.create(req.body)
+  if (result.error) {
+    return next({
+      status: 404,
+      message: 'Please enter all fields',
+      error: result.error
+    })
+  }
+  res.status(201).json({
+    result
   })
 }
 
-create = (req, res, next) => {
-  let item = req.body
-  model.create(item, (result, error) => {
+update = (req, res, next) => {
+  const id = req.params.id
+  const snacks = model.update(id, req.body)
 
-    if (error) {
-      res.status(404).send("Error entering new snack")
-    }
-    if (result.length === 0) {
-      res.status(404).json({
-        status: 404,
-        message: 'Error entering new snack'
-      })
-    }
-    res.status(200).json(result)
+  if (!snacks) {
+    return next({
+      status: 404,
+      message: `No snack with id of ${id}`
+    })
+  }
+  res.status(200).json({
+    snacks
   })
+}
+
+deleteSnack = (req, res, next) => {
+  const id = req.params.id
+  const result = model.deleteSnack(id)
+
+  if (result === -1) {
+    return next({
+      status: 404,
+      message: `No snack with id of ${id}`
+    })
+  }
+  res.status(204).json()
 }
 
 
 module.exports = {
   getAll,
   getById,
-  create
+  create,
+  update,
+  deleteSnack
 }
